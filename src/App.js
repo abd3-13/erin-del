@@ -679,6 +679,7 @@ const App = () => {
                   onOpenBlacklist={openBlacklist}
                   onOpenPlaylistsViewer={openPlaylistsViewer}
                   onTogglePlayPause={togglePlayPause}
+                  onDelete={currentdelete}
                 />
                 <BlacklistManager
                   visible={blacklistOpen}
