@@ -1,3 +1,13 @@
+# Fork difference
+
+I recently forked Erin so I could add a delete function. The idea came to me while I was browsing through my videos using Erin — I found myself wanting to remove a few that I no longer needed. So, with the skills I have, I decided to give it a shot. I'm still learning, so go easy on the critique!
+
+## Changes done
+- added a go binary that accepts a /del-video post with filename from the ` visibleVideos[currentVideoIndex].url ` when hit with post it deletes the video and its json file
+- added a new function in the  `src/App.js ` called "currentdelete" that send the post to the go binary
+- added a delete button in the `BottomNavbar/index.jsx ` 
+
+
 <p align="center">
     <h1 align="center">Erin</h1>
     <p align="center">
