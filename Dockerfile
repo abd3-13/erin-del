@@ -39,4 +39,5 @@ ENV SCROLL_DIRECTION "vertical"
 ENV USE_CUSTOM_SKIN "false"
 ENV DELETEAPI_URL = "http://localhost"
 
-ENTRYPOINT ./entrypoint.sh
+# Entrypoint shell script will run both
+ENTRYPOINT ["sh", "entrypoint.sh"]
