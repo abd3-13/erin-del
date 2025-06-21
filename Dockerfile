@@ -13,7 +13,18 @@ COPY erin-del.go ./
 
 RUN go build -o erin-del-vid
 
-# 3 - Set up Caddy and the frontend built beforehand
+# 3 - Build fronted erin
+FROM node:alpine as erinbuild
+
+WORKDIR /app
+
+# Copy all app source files 
+COPY src public package.json yarn.lock ./
+
+#build erin
+RUN yarn install && yarn build
+
+# 4 - Set up Caddy and the frontend built beforehand
 FROM caddy:2.8.4-alpine
 
 # Install the modules
@@ -25,7 +36,7 @@ COPY docker/Caddyfile /etc/caddy/
 COPY docker/entrypoint.sh ./
 
 # Install the React App
-COPY ./build /srv
+COPY --from=erinbuild ./build /srv
 
 # Set default environment variables
 ENV AUTH_ENABLED "false"
