@@ -7,6 +7,7 @@ import {
   faPlay,
   faVolumeMute,
   faVolumeUp,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./index.css";
@@ -21,6 +22,7 @@ const BottomNavbar = ({
   onBlacklist,
   onOpenBlacklist,
   onOpenPlaylistsViewer,
+  onDelete,
 }) => {
   return (
     <div className="bottom-navbar">
@@ -44,6 +46,9 @@ const BottomNavbar = ({
       </button>
       <button type="button" className="nav-item" onClick={onToggleMute}>
         <FontAwesomeIcon icon={!isMuted ? faVolumeUp : faVolumeMute} className="icon" />
+      </button>
+      <button type="button" className="nav-item" onClick={onDelete}>
+        <FontAwesomeIcon icon={faTrash} className="icon" />
       </button>
     </div>
   );
