@@ -1,0 +1,14 @@
+services:
+  erin:
+    container_name: erin-fork
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: abd3-13/erin-del
+    env_file:
+      - .env
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"     # Web UI (e.g., 5646)
+      - "${GO_PORT}:${GO_PORT}"       # Go backend (e.g., 5000)
+    volumes:
+      - ${VIDEO_DIR}:/srv/videos
