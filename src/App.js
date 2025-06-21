@@ -212,6 +212,33 @@ const App = () => {
     document.body.removeChild(anchor);
   };
 
+  // Video control - Delete the current video
+  const currentdelete = () => {
+      const url = visibleVideos[currentVideoIndex].url;
+      const partialPath = new URL(url).pathname.replace(/^\/media\//, '').split('?')[0];
+      const delapiurl = window.DELAPI_URL || ""
+      
+      fetch(`${delapiurl}/del-video`, { // <-- use backticks here!
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                  filename: partialPath
+              })
+          })
+          .then(response => response.json())
+          .then(data => {
+              console.log('Deleted:', data.deleted);
+              console.log('Failed:', data.failed);
+              //alert(`Deleted: ${data.deleted.join(', ')}\nFailed: ${data.failed.join(', ')}`);
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              alert('Error contacting server');
+          });
+  };
+  
   // Video control - Blacklist
   const blacklist = () => {
     const video = visibleVideos[currentVideoIndex];
