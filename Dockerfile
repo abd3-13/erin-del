@@ -37,7 +37,7 @@ ENV PROGRESS_BAR_POSITION "bottom"
 ENV IGNORE_HIDDEN_PATHS "false"
 ENV SCROLL_DIRECTION "vertical"
 ENV USE_CUSTOM_SKIN "false"
-ENV DELETEAPI_URL = "http://localhost"
+ENV DELAPI_URL = "http://localhost"
 
 # Entrypoint shell script will run both
 ENTRYPOINT ["sh", "entrypoint.sh"]
