@@ -231,6 +231,10 @@ const App = () => {
           .then(data => {
               console.log('Deleted:', data.deleted);
               console.log('Failed:', data.failed);
+              const wasDeleted = data.deleted.includes(partialPath);
+              
+              
+              if (wasDeleted) {handleVideoFinish();};
               //alert(`Deleted: ${data.deleted.join(', ')}\nFailed: ${data.failed.join(', ')}`);
           })
           .catch(error => {

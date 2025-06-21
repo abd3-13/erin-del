@@ -17,7 +17,10 @@ import (
 // Global variables for command-line flags
 var (
     allowedOrigin string // Value of the CORS origin allowed
-    port          string // Port to listen on
+    port          string // Port to listen
+    mediadir      string // location path of media directory
+    showHelp      bool // help flag
+    
 )
 
 func main() {
@@ -25,6 +28,7 @@ func main() {
     flag.StringVar(&allowedOrigin, "cors-origin", "", "Set Access-Control-Allow-Origin header")
     flag.StringVar(&port, "port", "5000", "Port to listen on")
     flag.BoolVar(&showHelp, "help", false, "Show help message and exit")
+    flag.StringVar(&mediadir, "media", "", "Set the location path of Videos")
     flag.Parse()
 
     // Help function to show the avaliable infos 
@@ -55,6 +59,9 @@ func main() {
     fmt.Printf("[INFO] Server starting on :%s\n", port)
     if allowedOrigin != "" {
         fmt.Printf("[INFO] CORS enabled for origin: %s\n", allowedOrigin)
+    }
+    if mediadir != "" {
+        fmt.Printf("[INFO] Media dir provided : %s\n", mediadir)
     }
 
     // Start the server in a goroutine so we can wait for shutdown
@@ -117,14 +124,14 @@ func processVideo(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // 🚨 Security check: disallow path traversal or slashes
-    if strings.Contains(req.Filename, "..") || strings.ContainsRune(req.Filename, '/') {
+    //  Security check: disallow path traversal
+    if strings.Contains(req.Filename, "../") {
         http.Error(w, "Invalid filename", http.StatusBadRequest)
         return
     }
 
     // Construct full file paths based on sanitized filename
-    videoPath := req.Filename
+    videoPath := filepath.Join(mediadir, req.Filename)
     jsonPath := strings.TrimSuffix(videoPath, filepath.Ext(videoPath)) + ".json"
 
     deleted := []string{} // list of successfully deleted files
@@ -132,19 +139,25 @@ func processVideo(w http.ResponseWriter, r *http.Request) {
 
     // Try deleting the video file
     if err := os.Remove(videoPath); err == nil {
-        deleted = append(deleted, req.Filename)
+        deleted = append(deleted, filepath.Base(req.Filename))
     } else {
-        failed = append(failed, req.Filename)
+        failed = append(failed, filepath.Base(req.Filename))
         fmt.Printf("[WARN] Failed to delete video '%s': %v\n", videoPath, err)
     }
 
-    // Try deleting the corresponding .json file
-    if err := os.Remove(jsonPath); err == nil {
-        deleted = append(deleted, filepath.Base(jsonPath))
-    } else {
-        failed = append(failed, filepath.Base(jsonPath))
-        fmt.Printf("[WARN] Failed to delete JSON '%s': %v\n", jsonPath, err)
+    // Check if JSON file exists before attempting to delete
+    if _, err := os.Stat(jsonPath); err == nil {
+        if err := os.Remove(jsonPath); err == nil {
+            deleted = append(deleted, filepath.Base(jsonPath))
+        } else {
+            failed = append(failed, filepath.Base(jsonPath))
+            fmt.Printf("[WARN] Failed to delete JSON '%s': %v\n", jsonPath, err)
+        }
+    } else if !os.IsNotExist(err) {
+        // Only log if the error is something other than "not exist"
+        fmt.Printf("[WARN] Could not stat JSON '%s': %v\n", jsonPath, err)
     }
+
 
      // Final summary log
     fmt.Printf("[INFO] Deletion result — Deleted: %v | Failed: %v\n", deleted, failed)
