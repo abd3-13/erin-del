@@ -7,6 +7,11 @@ I recently forked Erin so I could add a delete function. The idea came to me whi
 - added a new function in the  `src/App.js ` called "currentdelete" that send the post to the go binary
 - added a delete button in the `BottomNavbar/index.jsx ` 
 
+## Deploy
+- copy sample.env to .env
+- modifiy .env to your needs, make to change the PUBLIC_URL as caddy takes this value for serving where
+- `docker compose up -d` to build the image and then run the container
+_____________________________________________________________________________________
 
 <p align="center">
     <h1 align="center">Erin</h1>
