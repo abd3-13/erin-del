@@ -217,6 +217,7 @@ const App = () => {
       const url = visibleVideos[currentVideoIndex].url;
       const partialPath = new URL(url).pathname.replace(/^\/media\//, '').split('?')[0];
       const delapiurl = window.DELAPI_URL || ""
+      const btn = document.getElementById("btmnavdel");
       
       fetch(`${delapiurl}/del-video`, { // <-- use backticks here!
               method: 'POST',
@@ -231,15 +232,20 @@ const App = () => {
           .then(data => {
               console.log('Deleted:', data.deleted);
               console.log('Failed:', data.failed);
-              const wasDeleted = data.deleted.includes(partialPath);
+              btn.classList.add("flash-success");
               
               
-              if (wasDeleted) {handleVideoFinish();};
+              handleVideoFinish();
               //alert(`Deleted: ${data.deleted.join(', ')}\nFailed: ${data.failed.join(', ')}`);
           })
           .catch(error => {
               console.error('Error:', error);
               alert('Error contacting server');
+              btn.classList.add("flash-error");
+          })
+          .finally(() => {
+              // Remove flash classes after animation completes (1s)
+              setTimeout(() => { btn.classList.remove("flash-success", "flash-error"); }, 1000);
           });
   };
   

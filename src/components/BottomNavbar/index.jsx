@@ -47,7 +47,7 @@ const BottomNavbar = ({
       <button type="button" className="nav-item" onClick={onToggleMute}>
         <FontAwesomeIcon icon={!isMuted ? faVolumeUp : faVolumeMute} className="icon" />
       </button>
-      <button type="button" className="nav-item" onClick={onDelete}>
+      <button type="button" id="btmnavdel" className="nav-item" onClick={onDelete}>
         <FontAwesomeIcon icon={faTrash} className="icon" />
       </button>
     </div>

@@ -20,9 +20,9 @@ html[data-scroll-direction="horizontal"] .feed-pad-top {
 }
 
 .video-track-progress {
-  height: 1px;
+  height: 5px;
   width: 100%;
-  background: blue;
+  background: #eeeeee !important;
   position: fixed;
   transform: scaleX(0);
   transform-origin: left;
