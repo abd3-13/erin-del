@@ -15,6 +15,7 @@ I recently forked Erin so I could add a delete function. The idea came to me whi
   - `PUBLIC_URL` : the address Caddy serves on. Its port **must** match `WEB_PORT` (ex: `http://192.168.1.10:5646` with `WEB_PORT=5646`)
   - `DELAPI_URL` : the address your **browser** uses to reach the delete API. Its port **must** match `GO_PORT`
   - `CORS_ORIGIN` : set it to your `PUBLIC_URL` origin instead of `*` if possible
+  - `AUTH_SECRET` : only if `AUTH_ENABLED=true`. Docker Compose interpolates `.env`, so double every `$` of the hash. The default hash from `sample.env` becomes `AUTH_SECRET=$$2a$$14$$qRW8no8UDmSwIWM6KHwdRe1j/LMrxoP4NSM756RVodqeUq5HzG6t.` (otherwise the hash is silently truncated and the default password stops working)
 - `docker compose up -d --build` to build the image and start the containers
 - Both `WEB_PORT` (UI) and `GO_PORT` (delete API) are published. `AUTH_ENABLED` only protects the UI and media through Caddy, not the delete API, so keep `GO_PORT` on a trusted network or firewall it.
 _____________________________________________________________________________________
