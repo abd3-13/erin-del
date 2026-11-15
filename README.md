@@ -17,7 +17,43 @@ I recently forked Erin so I could add a delete function. The idea came to me whi
   - `CORS_ORIGIN` : set it to your `PUBLIC_URL` origin instead of `*` if possible
   - `AUTH_SECRET` : only if `AUTH_ENABLED=true`. Docker Compose interpolates `.env`, so double every `$` of the hash. The default hash from `sample.env` becomes `AUTH_SECRET=$$2a$$14$$qRW8no8UDmSwIWM6KHwdRe1j/LMrxoP4NSM756RVodqeUq5HzG6t.` (otherwise the hash is silently truncated and the default password stops working)
 - `docker compose up -d --build` to build the image and start the containers
+- or skip building: open the latest **Build image** run in the Actions tab, download the `erin-del-amd64-<sha>` artifact, then `docker load -i erin-del-<sha>-amd64.tar.gz` (the archive contains `abd3-13/erin-del:latest`, so `docker compose up -d` uses it as-is)
 - Both `WEB_PORT` (UI) and `GO_PORT` (delete API) are published. `AUTH_ENABLED` only protects the UI and media through Caddy, not the delete API, so keep `GO_PORT` on a trusted network or firewall it.
+
+## Keeping the fork up to date
+
+Upstream is [will-moss/erin](https://github.com/will-moss/erin) — the old `mosswill/erin` URL in the sections below no longer exists, only the Docker Hub image name is unchanged. This fork adds a small delta on top of it: the Go delete API, `docker/entrypoint.sh`, `docker-compose.yml`, and the delete button in the bottom bar.
+
+One-time setup:
+
+```sh
+git remote add upstream https://github.com/will-moss/erin
+git remote set-url origin git@github.com:abd3-13/erin-del.git   # HTTPS needs a token, SSH uses your key
+git config rerere.enabled true                                  # replays past conflict resolutions
+```
+
+For every upstream release (see what is new with `git log --oneline master..upstream/master`):
+
+```sh
+git fetch upstream --tags
+git switch -c sync/upstream-<version> master
+git merge upstream/master        # or a tag: git merge v1.22.0
+docker compose build && docker compose up -d
+# test: play, delete a middle clip, delete the last clip, delete a clip in a subfolder
+git switch master && git merge --ff-only sync/upstream-<version>
+git push origin master
+```
+
+Files that usually conflict, always in small, well-understood spots:
+
+| File | Why |
+| :--- | :--- |
+| `Dockerfile` | upstream owns the build stages, this fork adds the Go stage, `curl` and the entrypoint |
+| `sample.env`, `docker/Caddyfile`, `public/index.html` | this fork adds `DELAPI_URL` next to upstream's own variables |
+| `src/App.js` | the `currentdelete` function lives next to upstream's `download` / `share` |
+| `src/components/BottomNavbar/index.{jsx,css}` | the trash button and its flash animation |
+
+`erin-del.go`, `docker/entrypoint.sh` and `docker-compose.yml` are fork-only, so they never conflict.
 _____________________________________________________________________________________
 
 <p align="center">

@@ -1,0 +1,58 @@
+name: Build image
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: abd3-13/erin-del
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build linux/amd64 image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          load: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:latest
+          provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Export image to a loadable archive
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          name="erin-del-${GITHUB_SHA::7}-amd64.tar.gz"
+          docker save "${IMAGE_NAME}:${GITHUB_SHA}" | gzip -9 > "dist/${name}"
+          {
+            echo "### Image archive"
+            echo '```'
+            echo "docker load -i ${name}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          ls -lh dist
+
+      - name: Upload archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: erin-del-amd64-${{ github.sha }}
+          path: dist/*.tar.gz
+          retention-days: 30
+          compression-level: 0
