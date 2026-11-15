@@ -6,11 +6,17 @@ I recently forked Erin so I could add a delete function. The idea came to me whi
 - added a go binary that accepts a /del-video post with filename from the ` visibleVideos[currentVideoIndex].url ` when hit with post it deletes the video and its json file
 - added a new function in the  `src/App.js ` called "currentdelete" that send the post to the go binary
 - added a delete button in the `BottomNavbar/index.jsx ` 
+- synced with upstream v1.21.0 (pnpm build, download / share controls); the delete button now sits with the other bottom-bar controls
 
 ## Deploy
-- copy sample.env to .env
-- modifiy .env to your needs, make to change the PUBLIC_URL as caddy takes this value for serving where
-- `docker compose up -d` to build the image and then run the container
+- copy `sample.env` to `.env`
+- edit `.env`:
+  - `VIDEO_DIR` : absolute path to the folder holding your videos (do not keep `/path/to/the/videos`)
+  - `PUBLIC_URL` : the address Caddy serves on. Its port **must** match `WEB_PORT` (ex: `http://192.168.1.10:5646` with `WEB_PORT=5646`)
+  - `DELAPI_URL` : the address your **browser** uses to reach the delete API. Its port **must** match `GO_PORT`
+  - `CORS_ORIGIN` : set it to your `PUBLIC_URL` origin instead of `*` if possible
+- `docker compose up -d --build` to build the image and start the containers
+- Both `WEB_PORT` (UI) and `GO_PORT` (delete API) are published. `AUTH_ENABLED` only protects the UI and media through Caddy, not the delete API, so keep `GO_PORT` on a trusted network or firewall it.
 _____________________________________________________________________________________
 
 <p align="center">
@@ -41,11 +47,13 @@ Erin has all these features implemented :
 - Autoplay your feed without even swiping
 - Seek forward and backward using your keyboard, or using double taps
 - Enter / Exit fullscreen using a double tap in the center
-- Show video metadata using TikTok's UI\*\*\*
+- Share any clip with a direct link
+- Show video and playlist metadata using TikTok's UI\*\*\*
 - Simple lazy-loading mechanism for your videos
 - Automatic clip naming based on file name
 - Simple and optional security using a master password
 - Support for Horizontal and Vertical scroll direction
+- Support for starting video playback from the start, middle, or random point in the video
 - Support for custom styling\*\*\*\*
 - Support for HTTP and HTTPS
 - Support for Docker / proxy deployment
@@ -57,7 +65,7 @@ Caddy takes care of authentication, serving static files, and serving the React 
 
 > \*\*: By default, Erin will create a random feed from all the videos in your folder and its subdirectories. However, if you would like to create custom feeds (playlists), you can create subdirectories and organize your videos accordingly. For example: `https://my-server.tld/directory-a` will create a feed from the videos located in the `/directory-a` directory, and it works with any path (so, nested folders are supported).
 
-> \*\*\*: You can show a channel (with an avatar and name), a caption and a link for all your videos using a metadata file. The metadata file can be located anywhere inside your videos folder, and it must match its associated video's filename, while replacing the extension with JSON. For example: `my-video.mp4` can have its metadata in `my-video.json`. The metadata format [is shown here](/examples/video-metadata.json), and note that you can use raw HTML in the caption for custom styling and effects.
+> \*\*\*: You can show a channel (with an avatar and name), a caption and a link for all your videos using a metadata file. The metadata file can be located anywhere inside your videos folder, and it must match its associated video's filename, while replacing the extension with JSON. For example: `my-video.mp4` can have its metadata in `my-video.json`. The metadata format [is shown here](/examples/video-metadata.json), and note that you can use raw HTML in the caption for custom styling and effects. Moreover, you may define folder-level metadata to set a name and avatar for any playlist, and those information will be used for all the videos within that folder if they don't have their own metadata already. The folder-level metadata format [is shown here](/examples/folder-metadata.json) and it belongs to a file named `metadata.json` inside your folder.
 
 > \*\*\*\*: You can inject your own stylesheet to customize the appearance of the app by doing two things: 1) set `USE_CUSTOM_SKIN` to `true`, and 2) mount a `custom.css` file onto `/srv/custom.css` in your container.
 
@@ -126,15 +134,19 @@ To run Erin, you will need to set the following environment variables in a `.env
 
 | Parameter               | Type      | Description                | Default |
 | :---------------------- | :-------- | :------------------------- | ------- |
-| `PUBLIC_URL`            | `boolean` | The public URL used to remotely access your instance of Erin. (Please include HTTP / HTTPS and the port if not standard 80 or 443. Do not include a trailing slash) (Read the [official Caddy documentation](https://caddyserver.com/docs/caddyfile/concepts#addresses)) | https://localhost        
+| `PUBLIC_URL`            | `string`  | The public URL used to remotely access your instance of Erin. (Please include HTTP / HTTPS and the port if not standard 80 or 443. Do not include a trailing slash) (Read the [official Caddy documentation](https://caddyserver.com/docs/caddyfile/concepts#addresses)) | https://localhost |
 | `AUTH_ENABLED`          | `string`  | Whether Basic Authentication should be enabled. (This parameter is case sensitive) (Possible values : true, false) | true |
 | `AUTH_SECRET`           | `string`  | The secure hash of the password used to protect your instance of Erin. | Hash of `secure-password` |
 | `APP_TITLE`             | `string`  | The custom title that you would like to display in the browser's tab. (Tip: You can use `[VIDEO_TITLE]` here if you want Erin to dynamically display the title of the current video.) | Erin - TikTok feed for your own clips |
 | `AUTOPLAY_ENABLED`      | `boolean` | Whether autoplay should be enabled. (This parameter is case sensitive) (Possible values : true, false) | false |
+| `START_MUTED`           | `boolean` | Whether videos should start muted. (This parameter is case sensitive) (Possible values : true, false) | true |
 | `PROGRESS_BAR_POSITION` | `string`  | Where the progress bar should be located on the screen. (This parameter is case sensitive) (Possible values : bottom, top) | bottom |
 | `IGNORE_HIDDEN_PATHS`   | `boolean` | Whether all hidden files and directories (starting with a dot) should be ignored by Erin, and not loaded or scanned altogether | false |
 | `SCROLL_DIRECTION`      | `string`  | The scroll direction of your video feed. (Possible values : vertical, horizontal ) | vertical |
 | `USE_CUSTOM_SKIN`       | `boolean` | Whether a custom skin should be loaded on startup. (Possible values : true, false) | false |
+| `VIDEO_START_POSITION`  | `string`  | Where videos start playing. (Possible values : start, middle, random) | start |
+
+> **Note :** Browsers may block autoplay with sound before the user interacts with the page when `START_MUTED` is set to `false`.
 
 > **Tip :** To generate a secure hash for your instance, use the following command :
 
@@ -208,9 +220,6 @@ Here's a few examples to help you name your files :
 - `Spanish-language__Lesson-1.mp4` becomes `Spanish language - Lesson 1`
 - `Spiderman-1.ogg` becomes `Spiderman 1`
 
-Finally, please refrain from using the `#` symbol in your filenames, as
-it is a browser anchor, and it will prevent Erin from playing your files.
-
 #### In what order will my files appear in the feed?
 
 Erin randomly shuffles your video files on every browser refresh.
@@ -256,4 +265,3 @@ Big thanks to the individuals / teams behind these projects :
 - The countless others!
 
 And don't forget to mention Erin if you like it or if it helps you in any way!
-

@@ -31,6 +31,9 @@ const VideoFeed = ({
     videoRefs.current[index] = ref;
   };
 
+  // Member - Reference to the scrubber
+  const scrubberRef = useRef();
+
   // Member - Number of videos to load at a time
   const _bufferSize = 3;
 
@@ -51,17 +54,23 @@ const VideoFeed = ({
 
   // Mechanism - On video end, call a listener to trigger autoscroll + autoplay if enabled + progress tracker
   const handleVideoTimeUpdate = (e) => {
-    const progressRate = e.target.currentTime / (e.target.duration % 60);
+    const progressRate = e.target.currentTime / e.target.duration;
 
     if (!progressRef.current) return;
 
-    progressRef.current.style.transform = `scaleX(${progressRate})`;
+    progressRef.current.style.width = `${progressRate * 100}%`;
   };
 
   const replayVideo = (e) => {
     e.target.play();
     onFinishVideo();
   };
+
+  const startVideoAtSpecificPoint = (e) => {
+    e.target.currentTime = window.VIDEO_START_POSITION === 'middle'
+      ? e.target.duration / 2
+      : Math.random() * e.target.duration;
+  }
 
   // Hook - On mount - Set the current scroll
   useEffect(() => {
@@ -102,17 +111,27 @@ const VideoFeed = ({
         if (entry.isIntersecting) {
           visibleIndex = currentIndex;
           videoElement.play().catch((_) => {});
+
+          if ( window.VIDEO_START_POSITION !== 'start' ) {
+            if ( videoElement.readyState >= 1 ) startVideoAtSpecificPoint({ target: videoElement });
+            else videoElement.addEventListener('loadedmetadata', startVideoAtSpecificPoint, true);
+          }
+
           onFocusVideo(videos[currentIndex], currentIndex);
           videoElement.addEventListener("timeupdate", handleVideoTimeUpdate, true);
           videoElement.addEventListener("ended", replayVideo, true);
           currentVideoElement.current = videoElement;
-          progressRef.current.style.transform = `scaleX(0)`;
+          progressRef.current.style.width = `0%`;
         }
         // Case when a video is off-screen or being scrolled in / out of the screen
         else {
           videoElement.pause();
           videoElement.removeEventListener("timeupdate", handleVideoTimeUpdate, true);
           videoElement.removeEventListener("ended", replayVideo, true);
+
+          if ( window.VIDEO_START_POSITION !== 'start' ) {
+            videoElement.removeEventListener('loadedmetadata', startVideoAtSpecificPoint, true);
+          }
         }
       });
 
@@ -154,7 +173,12 @@ const VideoFeed = ({
 
           // - - The first-has-become-last element is updated in the DOM
           firstElement.setAttribute("data-index", currentIndex + 1);
-          firstElement.setAttribute("src", encodeURI(videos[currentIndex + 1].url));
+
+          const _nextVideo = videos[currentIndex + 1];
+          firstElement.setAttribute(
+            "src",
+            _nextVideo.url.replace(_nextVideo.filename, encodeURIComponent(_nextVideo.filename))
+          );
         }
       }
 
@@ -177,7 +201,14 @@ const VideoFeed = ({
 
           // - - The last-has-become-first element is updated in the DOM
           lastElement.setAttribute("data-index", currentIndex - 1);
-          lastElement.setAttribute("src", encodeURI(videos[currentIndex - 1].url));
+          const _previousVideo = videos[currentIndex - 1];
+          lastElement.setAttribute(
+            "src",
+            _previousVideo.url.replace(
+              _previousVideo.filename,
+              encodeURIComponent(_previousVideo.filename)
+            )
+          );
         }
       }
     };
@@ -195,7 +226,7 @@ const VideoFeed = ({
     };
   }, [videos]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Hook - On very first mount - Set keyboard forward/backward shortcuts + Mouse move listener for fullscreen mode
+  // Hook - On very first mount - Set keyboard forward/backward shortcuts + Mouse move listener for fullscreen mode + Scrubbing
   const handleKeyboardSeeking = (e) => {
     if (e.code === "ArrowRight") seekVideoForward();
     else if (e.code === "ArrowLeft") seekVideoBackward();
@@ -263,6 +294,32 @@ const VideoFeed = ({
       document.body.classList.add("fullscreen");
     }, 3000);
   };
+  const handleScrubStart = () => {
+    scrubberRef.current.classList.add('is-dragged');
+    currentVideoElement.current.pause();
+  }
+  const handleScrubDrag = (e) => {
+    const { clientX } = e.changedTouches[0]
+    const { duration } = currentVideoElement.current;
+    const { width } = window.screen;
+
+    let coordinateMappedToTimeInVideo = (clientX * duration) / width;
+
+    // Prevent overflows
+    coordinateMappedToTimeInVideo = Math.max(0, coordinateMappedToTimeInVideo);
+    coordinateMappedToTimeInVideo = Math.min(duration, coordinateMappedToTimeInVideo);
+
+    const progressRate = coordinateMappedToTimeInVideo / duration;
+
+    // Update time and UI
+    currentVideoElement.current.currentTime = coordinateMappedToTimeInVideo;
+    progressRef.current.style.width = `${progressRate * 100}%`;
+  }
+  const handleScrubEnd = () => {
+    scrubberRef.current.classList.remove('is-dragged');
+    currentVideoElement.current.play().catch((_) => {});
+  }
+
   useEffect(() => {
     // Seeking mechanism
     document.addEventListener("keydown", handleKeyboardSeeking);
@@ -270,9 +327,20 @@ const VideoFeed = ({
     // Fullscreen navigation
     document.addEventListener("mousemove", handleMouseMove);
 
+    // Scrubbing mechanism
+    scrubberRef.current.addEventListener('touchstart', handleScrubStart);
+    scrubberRef.current.addEventListener('touchmove', handleScrubDrag);
+    scrubberRef.current.addEventListener('touchend', handleScrubEnd);
+
     return () => {
       document.removeEventListener("keydown", handleKeyboardSeeking);
       document.removeEventListener("mousemove", handleMouseMove);
+
+      if ( scrubberRef.current ) {
+        scrubberRef.current.removeEventListener('touchstart', handleScrubStart);
+        scrubberRef.current.removeEventListener('touchmove', handleScrubDrag);
+        scrubberRef.current.removeEventListener('touchend', handleScrubEnd);
+      }
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -285,13 +353,17 @@ const VideoFeed = ({
         <VideoCard
           key={k}
           index={k + initialIndex}
-          url={videos[k + initialIndex] ? videos[k + initialIndex].url : ""}
+          video={videos[k + initialIndex] ? videos[k + initialIndex] : null}
           onDoubleClick={handleVideoTapToSeek}
           isLoaded={true}
           refForwarder={saveVideoRef(k)}
         />
       ))}
-      <div className={`video-track-progress ${window.PROGRESS_BAR_POSITION}`} ref={progressRef} />
+      <div className={`video-track-progress ${window.PROGRESS_BAR_POSITION}`} ref={progressRef}>
+        <button ref={scrubberRef} className="video-track-scrubber">
+          <i />
+        </button>
+      </div>
     </div>
   );
 };

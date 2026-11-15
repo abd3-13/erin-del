@@ -1,3 +1,143 @@
+# [1.21.0](https://github.com/will-moss/erin/compare/v1.20.1...v1.21.0) (2026-07-30)
+
+
+### Bug Fixes
+
+* **blacklist:** masking a video won't anymore cause a crash / blackout of the user interface ([4eff2ca](https://github.com/will-moss/erin/commit/4eff2ca393468452ef9de76b38ed5842c45f8ae8)), closes [#34](https://github.com/will-moss/erin/issues/34)
+* **client:** files that include dots in their names will now be properly matched and non-collided ([d92b5c6](https://github.com/will-moss/erin/commit/d92b5c6fb5d1147619690b81bc7cbf1630f45543)), closes [#45](https://github.com/will-moss/erin/issues/45)
+* **docs:** correct PUBLIC_URL type ([b2e8337](https://github.com/will-moss/erin/commit/b2e83372af2b70e81e64c26c04d6b5cffaf4ee1b))
+* **sharing:** added a fallback for browsers / environments where sharing isn't available ([dd0d5cd](https://github.com/will-moss/erin/commit/dd0d5cddf718ce6b7093f816a23d1542f980748d)), closes [#35](https://github.com/will-moss/erin/issues/35)
+
+
+### Features
+
+* **config:** allow starting videos unmuted ([42ca25e](https://github.com/will-moss/erin/commit/42ca25e0408e19c4fb63bf7bb61fe2e7713c037e))
+
+## [1.20.1](https://github.com/will-moss/erin/compare/v1.20.0...v1.20.1) (2026-03-13)
+
+
+### Bug Fixes
+
+* **playlists:** fixed a bug causing playlist gallery view and sharing to crash due to non-latin char ([2938326](https://github.com/will-moss/erin/commit/293832632d2cf384116ad08bed2d55173f4bf0fe)), closes [#32](https://github.com/will-moss/erin/issues/32)
+
+# [1.20.0](https://github.com/will-moss/erin/compare/v1.19.5...v1.20.0) (2026-03-11)
+
+
+### Features
+
+* **playback:** added the ability to select where to start playing videos from (start, mid, random) ([93c3d09](https://github.com/will-moss/erin/commit/93c3d09c923d3f6189c766a6bd43b9efa605395b)), closes [#33](https://github.com/will-moss/erin/issues/33)
+
+## [1.19.5](https://github.com/will-moss/erin/compare/v1.19.4...v1.19.5) (2026-03-10)
+
+
+### Bug Fixes
+
+* **playlists:** updated the sharing/playlist fragment gen to be more reliable with special chars ([9d77b84](https://github.com/will-moss/erin/commit/9d77b842beec7a91e0f6138c5bd7b30ccafbeb6f)), closes [#32](https://github.com/will-moss/erin/issues/32)
+
+## [1.19.4](https://github.com/will-moss/erin/compare/v1.19.3...v1.19.4) (2026-02-27)
+
+
+### Bug Fixes
+
+* **ui:** added an invisible space around the scrubber to make it even easier to drag ([a561d4d](https://github.com/will-moss/erin/commit/a561d4d6020f90c8b8f3c22ed284524f64fe95e7)), closes [#31](https://github.com/will-moss/erin/issues/31)
+
+## [1.19.3](https://github.com/will-moss/erin/compare/v1.19.2...v1.19.3) (2026-02-26)
+
+
+### Bug Fixes
+
+* **ui:** increased the size of the video scrubber to make it easier to use on mobile ([159884b](https://github.com/will-moss/erin/commit/159884b27d50b61239c515b8d3a186d9ea5d32bf)), closes [#31](https://github.com/will-moss/erin/issues/31)
+
+## [1.19.2](https://github.com/will-moss/erin/compare/v1.19.1...v1.19.2) (2026-02-16)
+
+
+### Bug Fixes
+
+* **build:** final fix to produce multi-arch image ([69166b8](https://github.com/will-moss/erin/commit/69166b854dd68b590bfae62c8550190cbbd38a66))
+
+## [1.19.1](https://github.com/will-moss/erin/compare/v1.19.0...v1.19.1) (2026-02-16)
+
+
+### Bug Fixes
+
+* **build:** removed unnecessary platform option causing crash on non-ARM machines ([6b151c9](https://github.com/will-moss/erin/commit/6b151c92dcc8971e9df7a779217c2ac5034d6b18))
+
+# [1.19.0](https://github.com/will-moss/erin/compare/v1.18.5...v1.19.0) (2026-02-16)
+
+
+### Bug Fixes
+
+* **build:** updated Caddy version to work with the replace-response plugin ([36dcb6d](https://github.com/will-moss/erin/commit/36dcb6d316a1256574755be39434dc8c149dd5db))
+* **build:** updated Dockerfile to make it easier to build multi-arch image on ARM ([6bd75ae](https://github.com/will-moss/erin/commit/6bd75ae81c7130908a3cc76e56f8e043cbd21ace))
+* **fullscreen:** adjusted the position of the video playback tracker in fullscreen mode ([43cc79e](https://github.com/will-moss/erin/commit/43cc79ec3970e72ee1b428c969601e82044bc45e))
+
+
+### Features
+
+* **player:** added a scrubber that can be dragged to jump to any point within the current video ([20788af](https://github.com/will-moss/erin/commit/20788aff077b78b1116f698bc43e4aa97a31cfd7))
+
+# [1.19.0](https://github.com/will-moss/erin/compare/v1.18.5...v1.19.0) (2026-02-16)
+
+
+### Bug Fixes
+
+* **build:** updated Caddy version to work with the replace-response plugin ([36dcb6d](https://github.com/will-moss/erin/commit/36dcb6d316a1256574755be39434dc8c149dd5db))
+* **fullscreen:** adjusted the position of the video playback tracker in fullscreen mode ([43cc79e](https://github.com/will-moss/erin/commit/43cc79ec3970e72ee1b428c969601e82044bc45e))
+
+
+### Features
+
+* **player:** added a scrubber that can be dragged to jump to any point within the current video ([20788af](https://github.com/will-moss/erin/commit/20788aff077b78b1116f698bc43e4aa97a31cfd7))
+
+## [1.18.5](https://github.com/will-moss/erin/compare/v1.18.4...v1.18.5) (2025-10-01)
+
+
+### Bug Fixes
+
+* **encoding:** disabled cache entirely for now, and fixed the encoding on the lazyloading part ([74f40eb](https://github.com/will-moss/erin/commit/74f40eb6c945b55b07039ad39fbcfca2c327339a)), closes [#28](https://github.com/will-moss/erin/issues/28)
+
+## [1.18.4](https://github.com/will-moss/erin/compare/v1.18.3...v1.18.4) (2025-10-01)
+
+
+### Bug Fixes
+
+* **playlists:** updated the link/src encodings to match previous update and support # and @ in URL ([45061f1](https://github.com/will-moss/erin/commit/45061f122b428db8d6aa63f763978e54241f03da))
+
+## [1.18.3](https://github.com/will-moss/erin/compare/v1.18.2...v1.18.3) (2025-09-30)
+
+
+### Bug Fixes
+
+* **global:** enabled previously-forbidden characters in video filenames (# and @ + others) ([3a6cefb](https://github.com/will-moss/erin/commit/3a6cefb175eb6bc1e66c747d35e7ae0c8180acdc)), closes [#28](https://github.com/will-moss/erin/issues/28)
+
+## [1.18.2](https://github.com/will-moss/erin/compare/v1.18.1...v1.18.2) (2025-09-30)
+
+
+### Bug Fixes
+
+* **ui:** the mute/unmute button is now clickable (it wasn't before due to a CSS depth issue) ([58b2f54](https://github.com/will-moss/erin/commit/58b2f54d3a912db86db92a5ff2d63e15ef17bb4e)), closes [#27](https://github.com/will-moss/erin/issues/27)
+
+## [1.18.1](https://github.com/will-moss/erin/compare/v1.18.0...v1.18.1) (2025-09-17)
+
+
+### Bug Fixes
+
+* **share:** fixed the share link generated when tapping the share button ([1e89055](https://github.com/will-moss/erin/commit/1e89055491fa8b544d9cab0f5a0026df79ff863f))
+
+# [1.18.0](https://github.com/will-moss/erin/compare/v1.17.0...v1.18.0) (2025-09-17)
+
+
+### Features
+
+* **client:** added a Share feature to send a link to a specific clip ([aef415c](https://github.com/will-moss/erin/commit/aef415c0b2951d5275d31f2b0da4457ceed108dc)), closes [#19](https://github.com/will-moss/erin/issues/19)
+
+# [1.17.0](https://github.com/will-moss/erin/compare/v1.16.0...v1.17.0) (2025-07-31)
+
+
+### Features
+
+* **playlists:** added support for playlist-level/folder-level metadata ([ebf5b26](https://github.com/will-moss/erin/commit/ebf5b267a26b9ce120f1dfca4c69f0fa7d9ea9bd)), closes [#23](https://github.com/will-moss/erin/issues/23)
+
 # [1.16.0](https://github.com/will-moss/erin/compare/v1.15.0...v1.16.0) (2025-05-12)
 
 
