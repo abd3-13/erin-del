@@ -292,8 +292,9 @@ const App = () => {
 
       flash("flash-success");
 
-      // Mirror the blacklist flow: move away from the deleted video, then
-      // remount the feed so the file is dropped from the list
+      // The deleted file stays in the queue: no state cleanup or remount.
+      // Just move the feed along so the next clip is shown; when the last
+      // clip was deleted, scroll back instead of staying on it.
       const _isLast =
         currentVideoIndex === visibleVideos.length - 1 && visibleVideos.length > 1;
 
@@ -304,25 +305,6 @@ const App = () => {
             ? { top: _isLast ? -1 : 1, left: 0, behavior: "smooth" }
             : { top: 0, left: _isLast ? -1 : 1, behavior: "smooth" },
         );
-
-      setTimeout(
-        () => {
-          setVideos((_videos) => _videos.filter((_v) => _v.url !== video.url));
-          setBlacklistUpdater((_updater) => _updater + 1);
-
-          // The last video is about to be removed - An array of 2 will become an array of 1
-          if (visibleVideos.length === 2) setCurrentVideoIndex(0);
-          else if (
-            visibleVideos.length > 2 &&
-            previousVideoIndex <= visibleVideos.length - 1 &&
-            currentVideoIndex > 0 &&
-            currentVideoIndex === visibleVideos.length - 2 &&
-            previousVideoIndex > 0
-          )
-            setCurrentVideoIndex(currentVideoIndex - 1);
-        },
-        visibleVideos.length > 1 ? 800 : 0,
-      );
     } catch (error) {
       console.error("Error:", error);
       flash("flash-error");
@@ -883,6 +865,12 @@ const App = () => {
                   onDelete={currentdelete}
                 />
                 <SideControls onShare={share} />
+                <div
+                  className="queue-counter"
+                  aria-label={`Video ${currentVideoIndex + 1} of ${visibleVideos.length}`}
+                >
+                  {currentVideoIndex + 1} / {visibleVideos.length}
+                </div>
                 <BlacklistManager
                   visible={blacklistOpen}
                   videos={_getBlacklist()}

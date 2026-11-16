@@ -6,7 +6,9 @@ I recently forked Erin so I could add a delete function. The idea came to me whi
 - added a go binary that accepts a /del-video post with filename from the ` visibleVideos[currentVideoIndex].url ` when hit with post it deletes the video and its json file
 - added a new function in the  `src/App.js ` called "currentdelete" that send the post to the go binary
 - added a delete button in the `BottomNavbar/index.jsx ` 
+- deleting only calls the API and scrolls to the next clip; the deleted file stays in the queue (no list cleanup, no reload)
 - synced with upstream v1.21.0 (pnpm build, download / share controls); the delete button now sits with the other bottom-bar controls
+- UI tweaks: 5px cyan (`#00e5ff`) progress bar so it stays visible on dark themes, and a `current / total` queue counter in the top right corner
 
 ## Deploy
 - copy `sample.env` to `.env`
