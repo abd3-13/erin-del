@@ -518,7 +518,11 @@ const App = () => {
       ),
       {
         method: "GET",
-        cache: "no-cache",
+        // The queue must reflect the folder's current contents. "no-cache"
+        // still lets the browser reuse a stored listing when the server
+        // answers 304 (Caddy's browse Last-Modified does not change when
+        // files are removed), which made deleted clips reappear on reload.
+        cache: "no-store",
         headers: _makeHTTPHeaders(),
       },
     )
