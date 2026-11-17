@@ -8,7 +8,7 @@ I recently forked Erin so I could add a delete function. The idea came to me whi
 - added a delete button in the `BottomNavbar/index.jsx ` 
 - deleting only calls the API and scrolls to the next clip; the deleted file stays in the queue (no list cleanup, no reload)
 - synced with upstream v1.21.0 (pnpm build, download / share controls); the delete button now sits with the other bottom-bar controls
-- UI tweaks: 5px cyan (`#00e5ff`) progress bar so it stays visible on dark themes, and a `current / total` queue counter in the top right corner
+- UI tweaks: 5px cyan (`#00e5ff`) progress bar so it stays visible on dark themes, and a `current / total` queue counter in the top right corner that drops the total as clips are deleted (the badge pulses on each successful delete)
 
 ## Deploy
 - copy `sample.env` to `.env`
@@ -21,6 +21,20 @@ I recently forked Erin so I could add a delete function. The idea came to me whi
 - `docker compose up -d --build` to build the image and start the containers
 - or skip building: open the latest **Build image** run in the Actions tab, download the `erin-del-amd64-<sha>` artifact, then `docker load -i erin-del-<sha>-amd64.tar.gz` (the archive contains `abd3-13/erin-del:latest`, so `docker compose up -d` uses it as-is)
 - Both `WEB_PORT` (UI) and `GO_PORT` (delete API) are published. `AUTH_ENABLED` only protects the UI and media through Caddy, not the delete API, so keep `GO_PORT` on a trusted network or firewall it.
+
+### Docker on a host with a default-deny firewall (ufw)
+
+Two things surprise people when ufw runs on the same host as Docker:
+
+- **Containers cannot resolve DNS or install packages** (`apk add`, `apt-get`, `pip` all fail with "temporary error"). The container's DNS query is addressed to the host resolver, so it arrives on the **INPUT** chain from `docker0` and is dropped by the default-deny policy. Allow the bridges:
+
+  ```sh
+  ufw allow in on docker0
+  ufw allow in on br-+
+  ```
+
+- **Published container ports bypass ufw**, because Docker handles them through the FORWARD chain. If the host must stay restricted, add the same policy to the `DOCKER-USER` chain (allow what you need, drop the rest) instead of relying on ufw's input rules.
+
 
 ## Keeping the fork up to date
 
