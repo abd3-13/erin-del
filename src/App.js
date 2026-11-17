@@ -156,6 +156,11 @@ const App = () => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [currentVideoMetadata, setCurrentVideoMetadata] = useState(false);
   const focusRequestRef = useRef(0);
+  // Number of clips deleted during this session. Deleted clips stay in the
+  // queue, so the counter subtracts them from the total instead of shrinking
+  // the list itself.
+  const [deletedCount, setDeletedCount] = useState(0);
+  const [queueCounterPulse, setQueueCounterPulse] = useState(false);
   const previousVideoIndex = usePrevious(currentVideoIndex);
   const handleVideoFocus = useCallback((v, i) => {
     const focusRequest = ++focusRequestRef.current;
@@ -245,6 +250,13 @@ const App = () => {
     [videos, blackListUpdater], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
+  // Dynamically-computed - Queue counter values ("current slot / clips left").
+  // Deletions do not shrink the list, so they are subtracted from the total,
+  // and the position is clamped so it can never exceed the remaining count.
+  const queueTotal = Math.max(visibleVideos.length - deletedCount, 0);
+  const queuePosition =
+    queueTotal === 0 ? 0 : Math.min(currentVideoIndex + 1, queueTotal);
+
   // Video control - Download the current video
   const download = () => {
     const url = visibleVideos[currentVideoIndex].url;
@@ -304,6 +316,11 @@ const App = () => {
       }
 
       flash("flash-success");
+
+      // The clip stays in the queue, so drop the counter's total by one and
+      // pulse the badge to make the change visible
+      setDeletedCount((_count) => _count + 1);
+      setQueueCounterPulse(true);
 
       // The deleted file stays in the queue: no state cleanup or remount.
       // Just move the feed along so the next clip is shown; when the last
@@ -667,6 +684,9 @@ const App = () => {
           : _shuffleArray(_videoFiles);
       });
 
+      // A fresh list means no deletions have happened in it yet
+      setDeletedCount(0);
+
       setLoading(false);
     });
   };
@@ -871,10 +891,13 @@ const App = () => {
                 />
                 <SideControls onShare={share} />
                 <div
-                  className="queue-counter"
-                  aria-label={`Video ${currentVideoIndex + 1} of ${visibleVideos.length}`}
+                  className={`queue-counter${
+                    queueCounterPulse ? " pulse" : ""
+                  }`}
+                  aria-label={`Video ${queuePosition} of ${queueTotal}`}
+                  onAnimationEnd={() => setQueueCounterPulse(false)}
                 >
-                  {currentVideoIndex + 1} / {visibleVideos.length}
+                  {queuePosition} / {queueTotal}
                 </div>
                 <BlacklistManager
                   visible={blacklistOpen}

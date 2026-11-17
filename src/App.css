@@ -199,3 +199,32 @@ button.btn-alternate {
   pointer-events: none;
   user-select: none;
 }
+
+/* Brief highlight when the total changes after a delete */
+@keyframes queuePulse {
+  0% {
+    transform: scale(1);
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+  }
+  40% {
+    transform: scale(1.12);
+    background: rgba(0, 229, 255, 0.9);
+    color: #001014;
+  }
+  100% {
+    transform: scale(1);
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+  }
+}
+
+.queue-counter.pulse {
+  animation: queuePulse 700ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .queue-counter.pulse {
+    animation: none;
+  }
+}
